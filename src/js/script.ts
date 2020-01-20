@@ -92,12 +92,17 @@ class Block {
     };
 };
 
+let cyclesNum: number = 0;
+
 // 豆
 class Bean {
     position: Block;
 
     constructor() {
-        this.position = new Block(10, 10);
+        let randomCol: number = Math.floor(Math.random() * (widthInBlocks - 2) + 1);
+        let randomRow: number = Math.floor(Math.random() * (heightInBlocks - 2) + 1);
+
+        this.position = new Block(randomCol, randomRow);
     };
 
     // 画豆
@@ -110,6 +115,17 @@ class Bean {
         let randomCol: number = Math.floor(Math.random() * (widthInBlocks - 2) + 1);
         let randomRow: number = Math.floor(Math.random() * (heightInBlocks - 2) + 1);
         this.position = new Block(randomCol, randomRow);
+        for (let i = 0; i < snake.segments.length; i++) {
+            if (this.position.equal(snake.segments[i])) {
+                cyclesNum++;
+                if (cyclesNum > 1000) {
+                    gameOver();
+                    throw new Error('死循环');
+                }
+                this.move();
+                cyclesNum = 0;
+            }
+        }
     };
 };
 
@@ -121,10 +137,12 @@ class Snake {
 
     // 蛇身部分
     constructor() {
+        let randomCol: number = Math.floor(Math.random() * (widthInBlocks - 5) + 1);
+        let randomRow: number = Math.floor(Math.random() * (heightInBlocks - 2) + 1);
         this.segments = [
-            new Block(7, 5),
-            new Block(6, 5),
-            new Block(5, 5)
+            new Block(randomCol + 2, randomRow),
+            new Block(randomCol + 1, randomRow),
+            new Block(randomCol, randomRow)
         ];
         this.direction = 'right';
         this.nextDirection = 'right';
@@ -210,11 +228,11 @@ let snake = new Snake();
 // 执行
 let intervalId = setInterval((): void => {
     ctx.clearRect(0, 0, width, height);
+    scenes.drawBorder();
     scenes.drawScore();
     snake.move();
     snake.draw();
     bean.draw();
-    scenes.drawBorder();
 }, 100);
 
 // 按键映射
